@@ -138,7 +138,7 @@ def live(q):
     j = add_silence(j, 0.5)
 
     print("test lol", j)
-
+    '''
     raw = j
     f = open("C:/Users/yetski/Music/Recordings/Raw.txt", "w+")
     for i in raw:
@@ -153,3 +153,4 @@ def live(q):
         wf.setframerate(RATE)
         wf.writeframes(data)
         wf.close()
+'''
