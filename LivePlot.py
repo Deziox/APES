@@ -10,6 +10,7 @@ import wave
 import time
 import math
 import sys
+import queue
 
 '''
 with open("C:/Users/yetski/Music/Recordings/Raw.txt") as f:
@@ -62,13 +63,15 @@ def add_silence(snd_data, seconds):
     r.extend([0 for i in range(int(seconds*RATE))])
     return r
 
-def live():
+def live(q):
     p = pyaudio.PyAudio()
     stream = p.open(format=FORMAT, channels=(2 if STEREO else 1), rate=RATE, input=True, output=True,
                     frames_per_buffer=CHUNKS)
     num_silent = 0
     started = False
     ret = array('h')
+
+    print(q.get())
 
     j = array('h')
     j = []

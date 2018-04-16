@@ -3,9 +3,12 @@ from array import array
 from struct import pack
 import pyaudio
 import wave
+import threading as thread
 import time
 import math
 import sys
+import queue
+import LivePlot
 
 CHUNKS = 1024
 FORMAT = pyaudio.paInt16
@@ -61,14 +64,22 @@ def add_silence(snd_data, seconds):
     return r
 
 
-def record():
+def record(path='C:/Users/yetski/Music/Recordings/Recording.wav'):
     p = pyaudio.PyAudio()
+
     stream = p.open(format=FORMAT,channels=(2 if STEREO else 1),rate=RATE,input=True,output=True,
                     frames_per_buffer=CHUNKS)
     num_silent = 0
     started = False
     ret = array('h')
     x = 0
+    try:
+        q = queue.Queue()
+        t1 = thread.Thread(target=LivePlot.live, args=(q,))
+        t1.start()
+        # t1.join()
+    except Exception as e:
+        print(e)
     while True:
         # little endian signed
         data = array('h',stream.read(CHUNKS))
@@ -89,7 +100,9 @@ def record():
             break
         # if x > 650:
         #   break
-
+        q.put(ret)
+    print("test queue",q.get())
+    time.sleep(5)
     sample_width = p.get_sample_size(FORMAT)
     stream.stop_stream()
     stream.close()
@@ -98,10 +111,28 @@ def record():
     ret = normalize(ret)
     ret = trim(ret)
     ret = add_silence(ret,0.5)
-    return sample_width,ret
+    data = ret
+    raw = data
+    S = sample_width
+    data = pack('<' + ('h' * len(data)), *data)
+    D = data
+    print(S, D)
+    with wave.open(path, 'wb') as wf:
+        # wf = wave.open(path,'wb')
+        wf.setnchannels((2 if STEREO else 1))
+        wf.setsampwidth(sample_width)
+        wf.setframerate(RATE)
+        wf.writeframes(data)
+        wf.close()
+    f = open("C:/Users/yetski/Music/Recordings/Raw.txt", "w+")
+    print(raw)
+    for i in raw:
+        f.write(str(i) + "\n")
+    f.close()
+    return S, D, raw
 
 
-def record_to_file(path="C://"):
+def record_to_file(q,path="C://"):
     sample_width,data = record()
     raw = data
     S = sample_width
@@ -115,6 +146,11 @@ def record_to_file(path="C://"):
         wf.setframerate(RATE)
         wf.writeframes(data)
         wf.close()
+    f = open("C:/Users/yetski/Music/Recordings/Raw.txt", "w+")
+    print(raw)
+    for i in raw:
+        f.write(str(i) + "\n")
+    f.close()
     return S,D,raw
 
 def test_to_file(S,D,raw,path="C://"):
