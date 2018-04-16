@@ -70,35 +70,37 @@ def live():
     started = False
     ret = array('h')
 
+    j = array('h')
     j = []
     X = []
     # print(X)
     # print(j)
 
     plt.ion()
-    graph = plt.plot(X, j)[0]
+    # graph = plt.plot(X, j)[0]
     i = 0
 
     plt.setbufsize(4096)
-    silent = True
-    started = False
-    op = True
+    xs = 0
     while True:
         # little endian signed
         data = array('h', stream.read(CHUNKS))
         # data2 = data
         # data2 = array('h',map(int,str(int.from_bytes(bytes(data),byteorder='big',signed=False))))
         # data = data2
+        print(xs,data)
         if byteorder == 'big':
             data.byteswap()
         j.extend(data)
+        # print(len(j),len(j),j,j)
+        # j = array('h',j)
         silent = negInf(data)
         if silent and started:
             num_silent += 1
         elif not silent and not started:
             started = True
-        if num_silent > 200:
-            break
+        #if num_silent > 200:
+        #   break
         # print(num_silent)
         # xs += 1
         # if (started and num_silent > 30) or xs > 650:
@@ -111,16 +113,40 @@ def live():
         graph = plt.plot(X, j)[0]
         graph.set_xdata(X)
         graph.set_ydata(j)
-        # print(X[0:i],j[0:i])
         plt.cla
         plt.draw()
         plt.pause(0.01)
         i += 4000
         # print(i)
+        xs += 1
+        print(xs,num_silent)
+        if (started and num_silent > 15) or xs > 650:
+            print('test')
+            break
 
     sample_width = p.get_sample_size(FORMAT)
     stream.stop_stream()
     stream.close()
     p.terminate()
+    plt.close()
 
-    # plt.close()
+    j = normalize(j)
+    j = trim(j)
+    j = add_silence(j, 0.5)
+
+    print("test lol", j)
+
+    raw = j
+    f = open("C:/Users/yetski/Music/Recordings/Raw.txt", "w+")
+    for i in raw:
+        f.write(str(i) + "\n")
+    f.close()
+
+    data = pack('<' + ('h' * len(j)), *j)
+    with wave.open('C:/Users/yetski/Music/Recordings/Recording.wav', 'wb') as wf:
+        # wf = wave.open(path,'wb')
+        wf.setnchannels((2 if STEREO else 1))
+        wf.setsampwidth(sample_width)
+        wf.setframerate(RATE)
+        wf.writeframes(data)
+        wf.close()

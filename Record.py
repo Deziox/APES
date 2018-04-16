@@ -163,9 +163,11 @@ def newSound():
 if __name__ == "__main__":
     S,D,raw = record_to_file("C:/Users/yetski/Music/Recordings/Recording.wav")
     f = open("C:/Users/yetski/Music/Recordings/Raw.txt","w+")
+    print(raw)
     for i in raw:
         f.write(str(i) + "\n")
     f.close()
+
     raw = fbdistort(raw,400)
     f = open("C:/Users/yetski/Music/Recordings/Raw2.txt","w+")
     for i in raw:

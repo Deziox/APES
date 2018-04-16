@@ -10,14 +10,23 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from Editor import Ui_Editor
 import Record
 import LivePlot
+from multiprocessing import Process
+import queue
+import threading as thread
 
 class Ui_OtherWindow(object):
 
     def rec(self):
         _translate = QtCore.QCoreApplication.translate
         self.pushButton.setText(_translate("OtherWindow", "Recording.."))
-        Record.newSound()
-        LivePlot.live()
+        q = queue.Queue()
+        try:
+            t1 = thread.Thread(target=Record.record_to_file(),args=(q))
+            t2 = thread.Thread(target=LivePlot.live(),args=(q))
+            t1.start()
+            t2.start()
+        except Exception as e:
+            print(e)
         self.pushButton.setText(_translate("OtherWindow", "Done Recording"))
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_Editor()
