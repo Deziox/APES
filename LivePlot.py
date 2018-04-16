@@ -23,7 +23,7 @@ data.pop()
 CHUNKS = 1024
 FORMAT = pyaudio.paInt16
 RATE = 44100 # or less so my laptop can keep running
-THRESH = 500
+THRESH = 1000
 STEREO = False
 
 def normalize(data,MAX = 16384):

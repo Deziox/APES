@@ -7,7 +7,9 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QFileDialog
 from OtherWindow import Ui_OtherWindow
+from LoadSound import App
 
 class Ui_MainWindow(object):
 
@@ -17,7 +19,15 @@ class Ui_MainWindow(object):
         self.ui.setupUi(self.window)
         # MainWindow.hide()
         self.window.show()
-        
+
+    def loadWindow(self):
+        # self.file_name = QFileDialog.show()
+        try:
+            load = App()
+        except Exception as e:
+            print(e)
+
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(878, 698)
@@ -82,6 +92,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
         self.pushButton.clicked.connect(self.openWindow)
+        self.pushButton_2.clicked.connect(self.loadWindow)
     
         
         self.label = QtWidgets.QLabel(self.centralwidget)
