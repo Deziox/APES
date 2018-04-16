@@ -7,10 +7,17 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import pyaudio
+import wave
 
 class Ui_Editor(object):
-    
-    def setupUi(self, EditorWindow):
+
+    def playOrig(self):
+        f = wave.open(r'' + (self.file_name),"rb")
+    def setupUi(self, EditorWindow,file_name="C:/Users/yetski/Music/Recordings/Recording.wav"):
+        self.CHUNKS = 1024
+        self.file_name = file_name
+        print(self.file_name)
         EditorWindow.setObjectName("EditorWindow")
         EditorWindow.resize(878, 698)
         self.centralwidget = QtWidgets.QWidget(EditorWindow)

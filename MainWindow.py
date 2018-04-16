@@ -9,6 +9,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QFileDialog
 from OtherWindow import Ui_OtherWindow
+from Editor import Ui_Editor
 from LoadSound import App
 
 class Ui_MainWindow(object):
@@ -24,6 +25,10 @@ class Ui_MainWindow(object):
         # self.file_name = QFileDialog.show()
         try:
             load = App()
+            self.window = QtWidgets.QMainWindow()
+            self.ui = Ui_Editor()
+            self.ui.setupUi(self.window,load.getFileName())
+            self.window.show()
         except Exception as e:
             print(e)
 
