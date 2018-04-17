@@ -37,6 +37,10 @@ class Ui_MainWindow(object):
         except Exception as e:
             print('test',e)
 
+    def quit(self):
+        # self.pushButton_4.setText("Good Bye")
+        sys.exit(1)
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(878, 698)
@@ -101,7 +105,7 @@ class Ui_MainWindow(object):
 
         self.pushButton.clicked.connect(self.openWindow)
         self.pushButton_2.clicked.connect(self.loadWindow)
-    
+        self.pushButton_4.clicked.connect(self.quit)
         
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(70, 40, 211, 41))

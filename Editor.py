@@ -7,16 +7,36 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from array import array
 import pyaudio
 import wave
-import UiTeste
 import time
 import threading as thread
+import math
+
+import numpy as np
 
 import GraphAmp
-
+from struct import pack
 
 class Ui_Editor(object):
+
+    CHUNKS = 1024
+    FORMAT = pyaudio.paInt16
+    RATE = 44100  # or less so my laptop can keep running
+    THRESH = 500
+    STEREO = False
+
+    def __init__(self):
+        self.graphamp = GraphAmp.GraphAmp()
+
+    def normalize(self,data, MAX=16384):
+        x = float(MAX) / max(abs(i) for i in data)
+
+        ret = array('h')
+        for i in data:
+            ret.append(int(i * x))
+        return ret
 
     def playOrig(self):
         print("te2")
@@ -40,20 +60,145 @@ class Ui_Editor(object):
         except Exception as e:
             print(e)
 
+    def playEdit(self):
+        print("te2")
+        try:
+            p = pyaudio.PyAudio()
+            f = wave.open(r'' + (self.edit_name),"rb")
+            stream = p.open(format=p.get_format_from_width(f.getsampwidth()),
+                            channels=f.getnchannels(),
+                            rate=f.getframerate(),
+                            output=True)
+
+            data = f.readframes(self.CHUNKS)
+            while data:
+                stream.write(data)
+                data = f.readframes(self.CHUNKS)
+
+            stream.stop_stream()
+            stream.close()
+
+            p.terminate()
+        except Exception as e:
+            print(e)
+
     def ampGraph(self):
         try:
-            g = GraphAmp.GraphAmp()
-            g.show()
-            # AmpGraph.showAmplitudeGraph(path)
+           self.graphamp.show_plot()
         except Exception as e:
             print("test",e)
             time.sleep(7)
 
+    def tubeDistort(self):
+        try:
+            p = pyaudio.PyAudio()
+            sample_width = p.get_sample_size(self.FORMAT)
+            f = open("C:/Users/yetski/Music/Recordings/Raw.txt", "r").read()
+            raw = f.split('\n')
+            raw.pop()
+            raw = [int(i) for i in raw]
+            raw = self.fbdistort(raw)
+            # sample_width =
+            data = pack('<' + ('h' * len(raw)), *raw)
+            print(data)
+            with wave.open(self.edit_name, 'wb') as wf:
+                wf.setnchannels((2 if self.STEREO else 1))
+                wf.setsampwidth(sample_width)
+                wf.setframerate(self.RATE)
+                wf.writeframes(data)
+                wf.close()
+        except Exception as e:
+            print(e)
 
-    def setupUi(self, EditorWindow):
-        file_name = ''
+    def fbdistort(self,raw, thresh=THRESH):
+        for i in range(len(raw)):
+            '''if(i > thresh or i < -thresh):
+                raw[i] = abs(abs(divmod(raw[i] - thresh,thresh*4)[1]) - thresh*2)'''
+            if raw[i] > 0:
+                raw[i] = int((1 - math.exp(-raw[i])) * 50)
+            else:
+                raw[i] = int((math.exp(raw[i]) - 1) * 50)
+
+        return self.normalize(raw, 13500)
+
+    def effect2(self):
+        try:
+            p = pyaudio.PyAudio()
+            sample_width = p.get_sample_size(self.FORMAT)
+            f = open("C:/Users/yetski/Music/Recordings/Raw.txt", "r").read()
+            raw = f.split('\n')
+            raw.pop()
+            raw = [int(math.fabs(int(i))) for i in raw]
+
+            # sample_width =
+            data = pack('<' + ('h' * len(raw)), *raw)
+            print(data)
+            with wave.open(self.edit_name, 'wb') as wf:
+                wf.setnchannels((2 if self.STEREO else 1))
+                wf.setsampwidth(sample_width)
+                wf.setframerate(self.RATE)
+                wf.writeframes(data)
+                wf.close()
+        except Exception as e:
+            print(e)
+
+    def effect3(self):
+        try:
+            p = pyaudio.PyAudio()
+            sample_width = p.get_sample_size(self.FORMAT)
+            f = open("C:/Users/yetski/Music/Recordings/Raw.txt", "r").read()
+            raw = f.split('\n')
+            raw.pop()
+            print(''.join(raw))
+            raw = [int(i) for i in raw]
+            raw.reverse()
+            print(''.join([str(i) for i in raw]))
+            # sample_width =
+            data = pack('<' + ('h' * len(raw)), *raw)
+            with wave.open(self.edit_name, 'wb') as wf:
+                wf.setnchannels((2 if self.STEREO else 1))
+                wf.setsampwidth(sample_width)
+                wf.setframerate(self.RATE)
+                wf.writeframes(data)
+                wf.close()
+        except Exception as e:
+            print(e)
+
+    def effect4(self):
+        try:
+            wr = wave.open(self.file_name, 'r')
+            # Set the parameters for the output file.
+            par = list(wr.getparams())
+            par[3] = 0  # The number of samples will be set by writeframes.
+            par = tuple(par)
+            ww = wave.open(self.edit_name, 'w')
+            ww.setparams(par)
+
+            fr = 20
+            sz = wr.getframerate() // fr  # Read and process 1/fr second at a time.
+            # A larger number for fr means less reverb.
+            c = int(wr.getnframes() / sz)  # count of the whole file
+            shift = 200 // fr  # shifting 200 Hz
+            for num in range(c):
+                da = np.fromstring(wr.readframes(sz), dtype=np.int16)
+                left, right = da[0::2], da[1::2]  # left and right channel
+                lf, rf = np.fft.rfft(left), np.fft.rfft(right)
+                lf, rf = np.roll(lf, shift), np.roll(rf, shift)
+                lf[0:shift], rf[0:shift] = 0, 0
+                nl, nr = np.fft.irfft(lf), np.fft.irfft(rf)
+                ns = np.column_stack((nl, nr)).ravel().astype(np.int16)
+                ww.writeframes(ns.tostring())
+            wr.close()
+            ww.close()
+        except Exception as e:
+            print(e)
+
+
+    def setupUi(self, EditorWindow,file_name = 'C:/Users/yetski/Music/Recordings/Recording.wav',edit_name = 'C:/Users/yetski/Music/Recordings/Recording2.wav'):
+        # file_name = 'C:/Users/yetski/Music/Recordings/Recording.wav'
         self.CHUNKS = 1024
         self.file_name = file_name
+        self.edit_name = edit_name
         print(self.file_name)
         EditorWindow.setObjectName("EditorWindow")
         EditorWindow.resize(878, 698)
@@ -118,6 +263,11 @@ class Ui_Editor(object):
         EditorWindow.setStatusBar(self.statusbar)
         self.pushButton.clicked.connect(self.playOrig)
         self.pushButton_9.clicked.connect(self.ampGraph)
+        self.pushButton_2.clicked.connect(self.playEdit)
+        self.pushButton_4.clicked.connect(self.tubeDistort)
+        self.pushButton_5.clicked.connect(self.effect2)
+        self.pushButton_8.clicked.connect(self.effect3)
+        self.pushButton_7.clicked.connect(self.effect4)
         # self.pushButton_2.clicked.connect(AmpGraph.showAmplitudeGraph())
 
         self.retranslateUi(EditorWindow)
@@ -128,12 +278,12 @@ class Ui_Editor(object):
         EditorWindow.setWindowTitle(_translate("EditorWindow", "EditorWindow"))
         self.pushButton.setText(_translate("EditorWindow", "Play Original Sound"))
 
-        self.pushButton_7.setText(_translate("EditorWindow", "Effect6"))
-        self.pushButton_8.setText(_translate("EditorWindow", "Effect5"))
-        self.pushButton_5.setText(_translate("EditorWindow", "Effect3"))
+        self.pushButton_7.setText(_translate("EditorWindow", "Pitch Shift"))
+        self.pushButton_8.setText(_translate("EditorWindow", "Reverse"))
+        self.pushButton_5.setText(_translate("EditorWindow", "Abs val bits"))
         self.pushButton_9.setText(_translate("EditorWindow", "Show Amplitude Graph"))
 
-        self.pushButton_4.setText(_translate("EditorWindow", "Reverb"))
+        self.pushButton_4.setText(_translate("EditorWindow", "Tube Distort"))
         self.pushButton_2.setText(_translate("EditorWindow", "Play Edited Sound"))
 
 

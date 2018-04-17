@@ -23,40 +23,34 @@ class GraphAmp(QtWidgets.QMainWindow):
         self.setCentralWidget(self._main)
         layout = QtWidgets.QVBoxLayout(self._main)
 
-        static_canvas = FigureCanvas(Figure(figsize=(5, 5)))
-        layout.addWidget(static_canvas)
-        self.addToolBar(NavigationToolbar(static_canvas, self))
+        self.static_canvas = FigureCanvas(Figure(figsize=(5, 5)))
+        layout.addWidget(self.static_canvas)
+        self.addToolBar(NavigationToolbar(self.static_canvas, self))
+        self._static_ax = self.static_canvas.figure.subplots()
+        self.wavpath = wavpath
+        self.rawpath =rawpath
 
-        # dynamic_canvas = FigureCanvas(Figure(figsize=(5, 3)))
-        # layout.addWidget(dynamic_canvas)
-        # self.addToolBar(QtCore.Qt.BottomToolBarArea,
-        #                 NavigationToolbar(dynamic_canvas, self))
+        self.samplerate = 0
+        self.data = []
 
-        samplerate, data = wavfile.read(wavpath)
-        d = open(rawpath, 'r').read()
+    def show_plot(self):
+        self.samplerate, self.data = wavfile.read(self.wavpath)
+        d = open(self.rawpath, 'r').read()
         lines = d.split('\n')
         lines.pop()
-        print("test", list(data))
+        print("test", list(self.data))
         print("test2", lines)
-        # times = np.arange(len(data)) / float(samplerate)
-
-        self._static_ax = static_canvas.figure.subplots()
-        t = [i for i in range(len(data))]
+        t = [i for i in range(len(self.data))]
         self._static_ax.plot(t, [int(line) for line in lines], "-")
-'''
-        self._dynamic_ax = dynamic_canvas.figure.subplots()
-        self._timer = dynamic_canvas.new_timer(
-            100, [(self._update_canvas, (), {})])
-        self._timer.start()
-        
+        self.show()
 
-    def _update_canvas(self):
-        self._dynamic_ax.clear()
-        t = np.linspace(0, 10, 101)
-        # Shift the sinusoid as a function of time.
-        self._dynamic_ax.plot(t, np.sin(t + time.time()))
-        self._dynamic_ax.figure.canvas.draw()
-'''
+    def hide_plot(self):
+        self.hide()
+
+    def updtate(self,newpath,newraw):
+        self.wavpath = newpath
+        self.rawpath = newraw
+        self.show_plot()
 
 if __name__ == "__main__":
     qapp = QtWidgets.QApplication(sys.argv)

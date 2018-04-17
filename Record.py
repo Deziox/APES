@@ -64,7 +64,7 @@ def add_silence(snd_data, seconds):
     return r
 
 
-def record(path='C:/Users/yetski/Music/Recordings/Recording.wav'):
+def record(path='C:/Users/yetski/Music/Recordings/Recording.wav',edit_path='C:/Users/yetski/Music/Recordings/Recording2.wav'):
     p = pyaudio.PyAudio()
 
     stream = p.open(format=FORMAT,channels=(2 if STEREO else 1),rate=RATE,input=True,output=True,
@@ -124,12 +124,21 @@ def record(path='C:/Users/yetski/Music/Recordings/Recording.wav'):
         wf.setframerate(RATE)
         wf.writeframes(data)
         wf.close()
+    with wave.open(edit_path,'wb') as wf:
+        wf.setnchannels((2 if STEREO else 1))
+        wf.setsampwidth(sample_width)
+        wf.setframerate(RATE)
+        wf.writeframes(data)
+        wf.close()
     f = open("C:/Users/yetski/Music/Recordings/Raw.txt", "w+")
-    print(raw)
     for i in raw:
         f.write(str(i) + "\n")
     f.close()
-    # return S, D, raw
+    f = open("C:/Users/yetski/Music/Recordings/Raw2.txt", "w+")
+    for i in raw:
+        f.write(str(i) + "\n")
+    f.close()
+    return S
 
 
 def record_to_file(q,path="C://"):
@@ -138,7 +147,7 @@ def record_to_file(q,path="C://"):
     S = sample_width
     data = pack('<' + ('h'*len(data)),*data)
     D = data
-    print(S,D)
+    # print(S,D)
     with wave.open(path,'wb') as wf:
         # wf = wave.open(path,'wb')
         wf.setnchannels((2 if STEREO else 1))
@@ -147,10 +156,10 @@ def record_to_file(q,path="C://"):
         wf.writeframes(data)
         wf.close()
     f = open("C:/Users/yetski/Music/Recordings/Raw.txt", "w+")
-    print(raw)
     for i in raw:
         f.write(str(i) + "\n")
     f.close()
+
     return S,D,raw
 
 def test_to_file(S,D,raw,path="C://"):

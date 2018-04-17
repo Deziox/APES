@@ -1,58 +1,89 @@
-'''import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from matplotlib import style
+# Reads a specified wave file (mono) and plays it with a delay with feedback.
+# This implementation uses a circular buffer (of minimum
+# length) and one buffer index.
+
+import pyaudio
 import wave
-style.use('fivethirtyeight')
+import struct
+import math
+from myfunctions import clip16j
 
-fig = plt.figure()
-ax1 = fig.add_subplot(1,1,1)
+wavfile = "author.wav"
+print("Play the wave file %s." % wavfile)
 
-def animate(i):
-    data = open('C:/Users/yetski/Music/Recordings/Raw.txt','r').read()
-    lines = data.split('\n')
-    xs = []
-    ys = []
-    x = 0.1
-    for line in lines:
-        xs.append(x)
-        x += 0.1
-        ys.append(line)
+# Open the wave file
+wf = wave.open( wavfile, 'rb')
 
-    ax1.clear()
-    ax1.plot(xs,ys)
+# Read the wave file properties
+num_channels = wf.getnchannels()        # Number of channels
+Fs = wf.getframerate()                  # Sampling rate (frames/second)
+signal_length  = wf.getnframes()        # Signal length
+width = wf.getsampwidth()               # Number of bytes per sample
 
-ani = animation.FuncAnimation(fig,animate,interval=1000)
-plt.show()'''
-# Load the required libraries:
-#   * scipy
-#   * numpy
-#   * matplotlib
-from scipy.io import wavfile
-from matplotlib import pyplot as plt
-import numpy as np
+print("The file has %d channel(s)."            % num_channels)
+print("The frame rate is %d frames/second."    % Fs)
+print("The file has %d frames."                % signal_length)
+print("There are %d bytes per sample."         % width)
 
+# Set parameters of delay system
+Gfb = 1.5       # feed-back gain
+Gdp = 0.8       # direct-path gain
+Gff = 0.3       # feed-forward gain
+# Gff = 0.0         # feed-forward gain (set to zero for no effect)
 
-def showAmplitudeGraph(path='C:/Users/yetski/Music/Recordings/Recording.wav'):
-    # Load the data and calculate the time of each sample
-    print('test')
-    samplerate, data = wavfile.read(path)
-    d = open('C:/Users/yetski/Music/Recordings/Raw.txt', 'r').read()
-    lines = d.split('\n')
-    print("test", list(data))
-    print("test2", lines)
-    times = np.arange(len(data)) / float(samplerate)
+delay_sec = 0.08 # 50 milliseconds
+delay_samples = int( math.floor( Fs * delay_sec ) )
 
-    # Make the plot
-    # You can tweak the figsize (width, height) in inches
-    plt.figure(figsize=(6.5, 4))
-    plt.fill_between(times, data, color='k')
-    plt.xlim(times[0], times[-1])
-    plt.xlabel('time (s)')
-    plt.ylabel('amplitude')
-    # You can set the format by changing the extension
-    # like .pdf, .svg, .eps
-    # plt.savefig('plot.png', dpi=100)
-    plt.show()
+print('The delay of {0:.3f} seconds is {1:d} samples.'.format(delay_sec, delay_samples))
 
-if __name__ == "__main__":
-    showAmplitudeGraph()
+# Create a delay line (buffer) to store past values. Initialize to zero.
+buffer_length = delay_samples
+buffer = [ 0 for i in range(buffer_length) ]
+
+# Open an output audio stream
+p = pyaudio.PyAudio()
+stream = p.open(format      = pyaudio.paInt16,
+                channels    = 1,
+                rate        = Fs,
+                input       = False,
+                output      = True )
+
+# Get first frame (sample)
+input_string = wf.readframes(1)
+
+# Delay line (buffer) index
+k = 0
+
+print ("**** Playing ****")
+
+while input_string != '':
+
+    # Convert string to number
+    input_value = struct.unpack('h', input_string)[0]
+
+    # Compute output value
+    output_value = Gdp * input_value + Gff * buffer[k];
+
+    # Update buffer
+    buffer[k] = input_value + Gfb * buffer[k]
+
+    # Increment buffer index
+    k = k + 1
+    if k == buffer_length:
+        # We have reached the end of the buffer. Circle back to front.
+        k = 0
+
+    # Clip output value to 16 bits and convert to binary string
+    output_string = struct.pack('h', clip16(output_value))
+
+    # Write output value to audio stream
+    stream.write(output_string)
+
+    # Get next frame (sample)
+    input_string = wf.readframes(1)
+
+print("**** Done ****")
+
+stream.stop_stream()
+stream.close()
+p.terminate()

@@ -17,11 +17,12 @@ import time
 
 class Ui_OtherWindow(object):
 
+
     def rec(self):
         try:
             _translate = QtCore.QCoreApplication.translate
             self.pushButton.setText(_translate("OtherWindow", "Recording.."))
-            Record.record()
+            self.sample_width = Record.record()
             self.pushButton.setText(_translate("OtherWindow", "Done Recording"))
             self.window = QtWidgets.QMainWindow()
             self.ui = Ui_Editor()
@@ -29,6 +30,7 @@ class Ui_OtherWindow(object):
 
             # OtherWindow.hide()
             self.window.show()
+            self.pushButton.setText(_translate("OtherWindow", "Record"))
         except Exception as e:
             print(e)
 
