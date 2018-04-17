@@ -23,7 +23,7 @@ data.pop()
 CHUNKS = 1024
 FORMAT = pyaudio.paInt16
 RATE = 44100 # or less so my laptop can keep running
-THRESH = 1000
+THRESH = 500
 STEREO = False
 
 def normalize(data,MAX = 16384):
@@ -91,7 +91,7 @@ def live(q):
         # data2 = data
         # data2 = array('h',map(int,str(int.from_bytes(bytes(data),byteorder='big',signed=False))))
         # data = data2
-        print(xs,data)
+        print("live test",xs,data)
         if byteorder == 'big':
             data.byteswap()
         j.extend(data)
@@ -124,7 +124,7 @@ def live(q):
         xs += 1
         print(xs,num_silent)
         if (started and num_silent > 15) or xs > 650:
-            print('test')
+            # print('test')
             break
 
     sample_width = p.get_sample_size(FORMAT)
@@ -133,11 +133,11 @@ def live(q):
     p.terminate()
     plt.close()
 
-    j = normalize(j)
-    j = trim(j)
-    j = add_silence(j, 0.5)
+    # j = normalize(j)
+    # j = trim(j)
+    # j = add_silence(j, 0.5)
 
-    print("test lol", j)
+    # print("test lol", j)
     '''
     raw = j
     f = open("C:/Users/yetski/Music/Recordings/Raw.txt", "w+")

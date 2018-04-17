@@ -11,15 +11,19 @@ from PyQt5.QtWidgets import QFileDialog
 from OtherWindow import Ui_OtherWindow
 from Editor import Ui_Editor
 from LoadSound import App
+import time
 
 class Ui_MainWindow(object):
 
     def openWindow(self):
-        self.window = QtWidgets.QMainWindow()
-        self.ui = Ui_OtherWindow()
-        self.ui.setupUi(self.window)
-        # MainWindow.hide()
-        self.window.show()
+        try:
+            self.window = QtWidgets.QMainWindow()
+            self.ui = Ui_OtherWindow()
+            self.ui.setupUi(self.window)
+            # MainWindow.hide()
+            self.window.show()
+        except Exception as e:
+            print(e)
 
     def loadWindow(self):
         # self.file_name = QFileDialog.show()
@@ -27,11 +31,11 @@ class Ui_MainWindow(object):
             load = App()
             self.window = QtWidgets.QMainWindow()
             self.ui = Ui_Editor()
+            print(self.ui)
             self.ui.setupUi(self.window,load.getFileName())
             self.window.show()
         except Exception as e:
-            print(e)
-
+            print('test',e)
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -83,7 +87,6 @@ class Ui_MainWindow(object):
         self.pushButton_3.raise_()
         self.pushButton_4.raise_()
         self.label_2.raise_()
-        # self.pushButton.clicked.connect(self.record)
 
         icon = QtGui.QIcon()
         icon.addFile('C:/Users/yetski/Pictures/ape.png', QtCore.QSize(64, 64))

@@ -13,7 +13,7 @@ import LivePlot
 CHUNKS = 1024
 FORMAT = pyaudio.paInt16
 RATE = 44100 # or less so my laptop can keep running
-THRESH = 1000
+THRESH = 500
 STEREO = False
 
 def negInf(data):
@@ -96,13 +96,13 @@ def record(path='C:/Users/yetski/Music/Recordings/Recording.wav'):
         elif not silent and not started:
             started = True
         x += 1
-        if (started and num_silent>30) or x > 650:
+        if (started and num_silent>15) or x > 650:
             break
         # if x > 650:
         #   break
         q.put(ret)
     print("test queue",q.get())
-    time.sleep(5)
+    # time.sleep(5)
     sample_width = p.get_sample_size(FORMAT)
     stream.stop_stream()
     stream.close()
@@ -129,7 +129,7 @@ def record(path='C:/Users/yetski/Music/Recordings/Recording.wav'):
     for i in raw:
         f.write(str(i) + "\n")
     f.close()
-    return S, D, raw
+    # return S, D, raw
 
 
 def record_to_file(q,path="C://"):

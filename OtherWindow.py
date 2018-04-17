@@ -13,19 +13,24 @@ import LivePlot
 from multiprocessing import Process
 import queue
 import threading as thread
+import time
 
 class Ui_OtherWindow(object):
 
     def rec(self):
-        _translate = QtCore.QCoreApplication.translate
-        self.pushButton.setText(_translate("OtherWindow", "Recording.."))
-        Record.record()
-        self.pushButton.setText(_translate("OtherWindow", "Done Recording"))
-        self.window = QtWidgets.QMainWindow()
-        self.ui = Ui_Editor()
-        self.ui.setupUi(self.window)
-        # OtherWindow.hide()
-        self.window.show()
+        try:
+            _translate = QtCore.QCoreApplication.translate
+            self.pushButton.setText(_translate("OtherWindow", "Recording.."))
+            Record.record()
+            self.pushButton.setText(_translate("OtherWindow", "Done Recording"))
+            self.window = QtWidgets.QMainWindow()
+            self.ui = Ui_Editor()
+            self.ui.setupUi(self.window)
+
+            # OtherWindow.hide()
+            self.window.show()
+        except Exception as e:
+            print(e)
 
     def setupUi(self, OtherWindow):
         OtherWindow.setObjectName("OtherWindow")

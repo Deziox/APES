@@ -9,12 +9,49 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pyaudio
 import wave
+import UiTeste
+import time
+import threading as thread
+
+import GraphAmp
+
 
 class Ui_Editor(object):
 
     def playOrig(self):
-        f = wave.open(r'' + (self.file_name),"rb")
-    def setupUi(self, EditorWindow,file_name="C:/Users/yetski/Music/Recordings/Recording.wav"):
+        print("te2")
+        try:
+            p = pyaudio.PyAudio()
+            f = wave.open(r'' + (self.file_name),"rb")
+            stream = p.open(format=p.get_format_from_width(f.getsampwidth()),
+                            channels=f.getnchannels(),
+                            rate=f.getframerate(),
+                            output=True)
+
+            data = f.readframes(self.CHUNKS)
+            while data:
+                stream.write(data)
+                data = f.readframes(self.CHUNKS)
+
+            stream.stop_stream()
+            stream.close()
+
+            p.terminate()
+        except Exception as e:
+            print(e)
+
+    def ampGraph(self):
+        try:
+            g = GraphAmp.GraphAmp()
+            g.show()
+            # AmpGraph.showAmplitudeGraph(path)
+        except Exception as e:
+            print("test",e)
+            time.sleep(7)
+
+
+    def setupUi(self, EditorWindow):
+        file_name = ''
         self.CHUNKS = 1024
         self.file_name = file_name
         print(self.file_name)
@@ -28,12 +65,8 @@ class Ui_Editor(object):
         font.setPointSize(17)
         self.pushButton.setFont(font)
         self.pushButton.setObjectName("pushButton")
-        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_3.setGeometry(QtCore.QRect(160, 110, 121, 81))
         font = QtGui.QFont()
         font.setPointSize(15)
-        self.pushButton_3.setFont(font)
-        self.pushButton_3.setObjectName("pushButton_3")
         self.pushButton_7 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_7.setGeometry(QtCore.QRect(610, 330, 121, 81))
         font = QtGui.QFont()
@@ -60,12 +93,8 @@ class Ui_Editor(object):
         font.setWeight(75)
         self.pushButton_9.setFont(font)
         self.pushButton_9.setObjectName("pushButton_9")
-        self.pushButton_6 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_6.setGeometry(QtCore.QRect(610, 110, 121, 81))
         font = QtGui.QFont()
         font.setPointSize(15)
-        self.pushButton_6.setFont(font)
-        self.pushButton_6.setObjectName("pushButton_6")
         self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_4.setGeometry(QtCore.QRect(160, 220, 121, 81))
         font = QtGui.QFont()
@@ -87,6 +116,9 @@ class Ui_Editor(object):
         self.statusbar = QtWidgets.QStatusBar(EditorWindow)
         self.statusbar.setObjectName("statusbar")
         EditorWindow.setStatusBar(self.statusbar)
+        self.pushButton.clicked.connect(self.playOrig)
+        self.pushButton_9.clicked.connect(self.ampGraph)
+        # self.pushButton_2.clicked.connect(AmpGraph.showAmplitudeGraph())
 
         self.retranslateUi(EditorWindow)
         QtCore.QMetaObject.connectSlotsByName(EditorWindow)
@@ -95,12 +127,12 @@ class Ui_Editor(object):
         _translate = QtCore.QCoreApplication.translate
         EditorWindow.setWindowTitle(_translate("EditorWindow", "EditorWindow"))
         self.pushButton.setText(_translate("EditorWindow", "Play Original Sound"))
-        self.pushButton_3.setText(_translate("EditorWindow", "Distort"))
+
         self.pushButton_7.setText(_translate("EditorWindow", "Effect6"))
         self.pushButton_8.setText(_translate("EditorWindow", "Effect5"))
         self.pushButton_5.setText(_translate("EditorWindow", "Effect3"))
         self.pushButton_9.setText(_translate("EditorWindow", "Show Amplitude Graph"))
-        self.pushButton_6.setText(_translate("EditorWindow", "Effect4"))
+
         self.pushButton_4.setText(_translate("EditorWindow", "Reverb"))
         self.pushButton_2.setText(_translate("EditorWindow", "Play Edited Sound"))
 
