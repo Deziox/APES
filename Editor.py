@@ -107,6 +107,11 @@ class Ui_Editor(object):
                 wf.setframerate(self.RATE)
                 wf.writeframes(data)
                 wf.close()
+            f = open("C:/Users/yetski/Music/Recordings/Raw2.txt", "w+")
+            for i in raw:
+                f.write(str(i) + "\n")
+            f.close()
+            self.graphamp.update_plot(self.edit_name,"C:/Users/yetski/Music/Recordings/Raw2.txt")
         except Exception as e:
             print(e)
 
@@ -139,6 +144,11 @@ class Ui_Editor(object):
                 wf.setframerate(self.RATE)
                 wf.writeframes(data)
                 wf.close()
+            f = open("C:/Users/yetski/Music/Recordings/Raw2.txt", "w+")
+            for i in raw:
+                f.write(str(i) + "\n")
+            f.close()
+            self.graphamp.update_plot(self.edit_name, "C:/Users/yetski/Music/Recordings/Raw2.txt")
         except Exception as e:
             print(e)
 
@@ -161,6 +171,11 @@ class Ui_Editor(object):
                 wf.setframerate(self.RATE)
                 wf.writeframes(data)
                 wf.close()
+            f = open("C:/Users/yetski/Music/Recordings/Raw2.txt", "w+")
+            for i in raw:
+                f.write(str(i) + "\n")
+            f.close()
+            self.graphamp.update_plot(self.edit_name, "C:/Users/yetski/Music/Recordings/Raw2.txt")
         except Exception as e:
             print(e)
 
@@ -188,8 +203,14 @@ class Ui_Editor(object):
                 nl, nr = np.fft.irfft(lf), np.fft.irfft(rf)
                 ns = np.column_stack((nl, nr)).ravel().astype(np.int16)
                 ww.writeframes(ns.tostring())
+            raw = ww.readframes()
             wr.close()
             ww.close()
+            f = open("C:/Users/yetski/Music/Recordings/Raw2.txt", "w+")
+            for i in raw:
+                f.write(str(i) + "\n")
+            f.close()
+            self.graphamp.update_plot(self.edit_name, "C:/Users/yetski/Music/Recordings/Raw2.txt")
         except Exception as e:
             print(e)
 

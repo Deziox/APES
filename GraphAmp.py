@@ -43,11 +43,12 @@ class GraphAmp(QtWidgets.QMainWindow):
         t = [i for i in range(len(self.data))]
         self._static_ax.plot(t, [int(line) for line in lines], "-")
         self.show()
+        self.update()
 
     def hide_plot(self):
         self.hide()
 
-    def updtate(self,newpath,newraw):
+    def update_plot(self,newpath,newraw):
         self.wavpath = newpath
         self.rawpath = newraw
         self.show_plot()
